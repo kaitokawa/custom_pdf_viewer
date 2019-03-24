@@ -35,6 +35,8 @@ function renderPage(num) {
     // Wait for rendering to finish
     page.render(renderContext).promise.then(() => {
       pageRendering = false;
+      localStorage.removeItem("pageNum");
+      localStorage.setItem("pageNum", `${pageNum}`);
       if (pageNumPending !== null) {
         // New page rendering is pending
         renderPage(pageNumPending);
@@ -89,6 +91,10 @@ document.getElementById("next").addEventListener("click", onNextPage);
 pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
   pdfDoc = pdfDoc_;
   document.getElementById("page_count").textContent = pdfDoc.numPages;
+
+  if (localStorage.getItem("pageNum") !== null) {
+    pageNum = parseInt(localStorage.getItem("pageNum"), 10);
+  }
 
   // Initial/first page rendering
   renderPage(pageNum);
