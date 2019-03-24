@@ -1,4 +1,4 @@
-const url = "docs/pdf.pdf";
+// const url = "docs/pdf.pdf";
 
 const pdfjsLib = window["pdfjs-dist/build/pdf"];
 
@@ -8,7 +8,8 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 let pdfDoc = null,
   pageNum = 1,
   pageRendering = false,
-  pageNumPending = null;
+  pageNumPending = null,
+  url;
 
 const scale = 1.5,
   canvas = document.getElementById("pdf-viewer"),
@@ -88,14 +89,36 @@ document.getElementById("next").addEventListener("click", onNextPage);
 /**
  * Asynchronously downloads PDF.
  */
-pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
-  pdfDoc = pdfDoc_;
-  document.getElementById("page_count").textContent = pdfDoc.numPages;
+function downloadPDF(data) {
+  pdfjsLib.getDocument({ data: pdfData }).promise.then(pdfDoc_ => {
+    pdfDoc = pdfDoc_;
+    document.getElementById("page_count").textContent = pdfDoc.numPages;
 
-  if (localStorage.getItem("pageNum") !== null) {
-    pageNum = parseInt(localStorage.getItem("pageNum"), 10);
-  }
+    if (localStorage.getItem("pageNum") !== null) {
+      pageNum = parseInt(localStorage.getItem("pageNum"), 10);
+    }
 
-  // Initial/first page rendering
-  renderPage(pageNum);
-});
+    // Initial/first page rendering
+    renderPage(pageNum);
+  });
+}
+
+const input = document.querySelector('input[type="file"]');
+input.addEventListener(
+  "change",
+  e => {
+    console.log(input.files[0].name);
+    if (/\.(pdf)$/i.test(input.files[0].name)) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64result = reader.result.split(",")[1];
+        pdfData = atob(base64result);
+        downloadPDF(pdfData);
+      };
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      alert("Please select a pdf file...");
+    }
+  },
+  false
+);
