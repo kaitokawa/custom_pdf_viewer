@@ -1,5 +1,3 @@
-// const url = "docs/pdf.pdf";
-
 const pdfjsLib = window["pdfjs-dist/build/pdf"];
 
 pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -9,7 +7,7 @@ let pdfDoc = null,
   pageNum = 1,
   pageRendering = false,
   pageNumPending = null,
-  url;
+  pdfData;
 
 const scale = 1.5,
   canvas = document.getElementById("pdf-viewer"),
@@ -103,16 +101,21 @@ function downloadPDF(data) {
   });
 }
 
+if (localStorage.getItem("pdfData") !== null) {
+  pdfData = localStorage.getItem("pdfData");
+  downloadPDF(pdfData);
+}
 const input = document.querySelector('input[type="file"]');
 input.addEventListener(
   "change",
   e => {
-    console.log(input.files[0].name);
     if (/\.(pdf)$/i.test(input.files[0].name)) {
       const reader = new FileReader();
       reader.onload = () => {
         const base64result = reader.result.split(",")[1];
         pdfData = atob(base64result);
+        localStorage.removeItem("pdfData");
+        localStorage.setItem("pdfData", `${pdfData}`);
         downloadPDF(pdfData);
       };
       reader.readAsDataURL(input.files[0]);
