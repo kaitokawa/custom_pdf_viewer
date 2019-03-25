@@ -7,10 +7,10 @@ let pdfDoc = null,
   pageNum = 1,
   pageRendering = false,
   pageNumPending = null,
-  pdfData;
+  pdfData,
+  scale = 1.5;
 
-const scale = 1.5,
-  canvas = document.getElementById("pdf-viewer"),
+const canvas = document.getElementById("pdf-viewer"),
   ctx = canvas.getContext("2d");
 
 /**
@@ -85,11 +85,33 @@ function onNextPage() {
 document.getElementById("next").addEventListener("click", onNextPage);
 
 /**
+ * Zooms in page.
+ */
+function zoomInPage() {
+  scale += 0.25;
+  queueRenderPage(pageNum);
+}
+document.getElementById("zoom-in").addEventListener("click", zoomInPage);
+
+/**
+ * Zooms out page
+ */
+function zoomOutPage() {
+  if (scale <= 0.25) {
+    return;
+  }
+  scale = scale - 0.25;
+  queueRenderPage(pageNum);
+}
+document.getElementById("zoom-out").addEventListener("click", zoomOutPage);
+
+/**
  * Asynchronously downloads PDF.
  */
 function downloadPDF(data) {
   pdfjsLib.getDocument({ data: pdfData }).promise.then(pdfDoc_ => {
     pdfDoc = pdfDoc_;
+    console.log(pdfDoc);
     document.getElementById("page_count").textContent = pdfDoc.numPages;
 
     if (localStorage.getItem("pageNum") !== null) {
